@@ -1,7 +1,7 @@
 {
   "name": "prepress",
   "productName": "Prepress",
-  "version": "1.1.2a",
+  "version": "1.1.2b",
   "description": "My Electron application description",
   "main": "src/index.js",
   "scripts": {
@@ -10,6 +10,10 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "lint": "eslint --cache --color --ext .jsx,.js src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sams-joseph/prepress-app.git"
   },
   "keywords": [],
   "author": "jsams",
@@ -66,7 +70,8 @@
     "react-hot-loader": "^3.0.0-beta.6",
     "react-router-dom": "^4.3.1",
     "react-transition-group": "^2.3.1",
-    "styled-components": "^3.3.0"
+    "styled-components": "^3.3.0",
+    "update-electron-app": "^1.3.0"
   },
   "devDependencies": {
     "babel-plugin-transform-async-to-generator": "^6.24.1",

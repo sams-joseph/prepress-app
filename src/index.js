@@ -7,6 +7,8 @@ import moment from 'moment';
 
 import { DBUSER, DBPASSWORD } from './config';
 
+require('update-electron-app')();
+
 mongoose.connect(`mongodb://${DBUSER}:${DBPASSWORD}@ds239359.mlab.com:39359/prepress`);
 
 const Rename = mongoose.model('Rename', {
