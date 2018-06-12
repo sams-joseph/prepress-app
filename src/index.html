@@ -4,7 +4,7 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500">
-  <title>Skynet</title>
+  <title>Rename</title>
 </head>
 
 <body style="overflow: hidden; background-color: rgba(0,0,0,0); margin: 0">
@@ -15,10 +15,35 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {AppContainer} from 'react-hot-loader';
+import { Switch, MemoryRouter } from 'react-router-dom';
+import { injectGlobal } from 'styled-components';
+
+injectGlobal([
+  `
+  .fade-enter {
+    transform: translateX(-30px);
+    opacity: 0.01;
+  }
+  .fade-enter.fade-enter-active {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 300ms ease-in, transform 300ms ease-in;
+  }
+  .fade-exit {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  .fade-exit.fade-exit-active {
+    opacity: 0.01;
+    transform: translateX(-30px);
+    transition: opacity 300ms ease-out, transform 300ms ease-out;
+  }
+  `,
+]);
 
 const render = () => {
   const App = require('./render/app').default;
-  ReactDOM.render(<AppContainer><App /></AppContainer>, document.getElementById('App'));
+  ReactDOM.render(<MemoryRouter><App /></MemoryRouter>, document.getElementById('App'));
 }
 
 render();
