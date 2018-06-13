@@ -1,7 +1,7 @@
 {
   "name": "prepress",
   "productName": "Prepress",
-  "version": "1.1.2b",
+  "version": "1.1.2c",
   "description": "My Electron application description",
   "main": "src/index.js",
   "scripts": {
@@ -76,6 +76,7 @@
   "devDependencies": {
     "babel-plugin-transform-async-to-generator": "^6.24.1",
     "babel-plugin-transform-es2015-classes": "^6.24.1",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "electron-forge": "^5.2.2",
