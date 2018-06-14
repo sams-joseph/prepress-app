@@ -112,6 +112,14 @@ function createData(original, newOrder, selectedParts, created) {
   return { counter, date, original, newOrder, parts };
 }
 
+let resetCounter = 0;
+function createDataReset(order, selectedParts, created) {
+  resetCounter += 1;
+  const parts = selectedParts.join(', ');
+  const date = moment(created).format('h:mm A MMM DD YYYY');
+  return { resetCounter, date, original: order, parts };
+}
+
 const styles = theme => ({
   root: {
     width: '100%',
@@ -152,11 +160,18 @@ class PaginatedTable extends React.Component {
   }
 
   render() {
-    const { classes, orders } = this.props;
+    const { classes, orders, table } = this.props;
     const { rowsPerPage, page } = this.state;
-    const data = orders.map(order => (
-      createData(order._doc.original, order._doc.new, order._doc.parts, order._doc.created)
-    )).sort((a, b) => (a.counter > b.counter ? -1 : 1));
+    let data = {};
+    if (table === 0) {
+      data = orders.map(order => (
+        createData(order._doc.original, order._doc.new, order._doc.parts, order._doc.created)
+      )).sort((a, b) => (a.counter > b.counter ? -1 : 1));
+    } else {
+      data = orders.map(order => (
+        createDataReset(order._doc.order, order._doc.parts, order._doc.created)
+      )).sort((a, b) => (a.counter > b.counter ? -1 : 1));
+    }
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
     return (
@@ -164,12 +179,20 @@ class PaginatedTable extends React.Component {
         <div className={classes.tableWrapper}>
           <Table className={classes.table}>
             <TableHead>
-              <TableRow>
-                <TableCell>Created At</TableCell>
-                <TableCell numeric>Original Order</TableCell>
-                <TableCell numeric>New Order</TableCell>
-                <TableCell numeric>Selected Parts</TableCell>
-              </TableRow>
+              {table === 0 ? (
+                <TableRow>
+                  <TableCell>Created At</TableCell>
+                  <TableCell numeric>Original Order</TableCell>
+                  <TableCell numeric>New Order</TableCell>
+                  <TableCell numeric>Selected Parts</TableCell>
+                </TableRow>
+              ) : (
+                <TableRow>
+                  <TableCell>Created At</TableCell>
+                  <TableCell numeric>Order</TableCell>
+                  <TableCell numeric>Selected Parts</TableCell>
+                </TableRow>
+              )}
             </TableHead>
             <TableBody>
               {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(n => (
@@ -178,7 +201,9 @@ class PaginatedTable extends React.Component {
                   <TableCell numeric component="th" scope="row">
                     {n.original}
                   </TableCell>
-                  <TableCell numeric>{n.newOrder}</TableCell>
+                  {table === 0 &&
+                    <TableCell numeric>{n.newOrder}</TableCell>
+                  }
                   <TableCell numeric>{n.parts}</TableCell>
                 </TableRow>
               ))}

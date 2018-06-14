@@ -200,16 +200,17 @@ class Logs extends React.Component {
         loading: false,
       });
     });
-    ipcRenderer.send('get-logs', 'start');
+    ipcRenderer.send('get-logs', this.state.value);
   }
 
   handleChange(event, value) {
-    this.setState({ value });
+    this.setState({ value, loading: true });
+
+    ipcRenderer.send('get-logs', value);
   }
 
   handleSearch(event) {
-    // this.setState({ loading: true });
-    ipcRenderer.send('search-logs', event.target.value);
+    ipcRenderer.send('search-logs', { search: event.target.value, table: this.state.value });
   }
 
   render() {
@@ -225,7 +226,8 @@ class Logs extends React.Component {
               <Container>
                 <HeaderBar>
                   <Tabs value={value} onChange={this.handleChange} classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}>
-                    <Tab label="Renames" classes={{ root: classes.tabRoot, selected: classes.tabSelected }} />
+                    <Tab label="Rename" classes={{ root: classes.tabRoot, selected: classes.tabSelected }} />
+                    <Tab label="Reset" classes={{ root: classes.tabRoot, selected: classes.tabSelected }} />
                   </Tabs>
                 </HeaderBar>
                 <Query>
@@ -254,10 +256,10 @@ class Logs extends React.Component {
                       variant="body1"
                       style={{ lineHeight: '75px', marginLeft: '20px', color: 'white', fontWeight: '300', letterSpacing: '1px' }}
                     >
-                        Rename History
+                      {this.state.value === 0 ? 'Rename History' : 'Reset History'}
                     </Typography>
                   </TableHeading>
-                  <PaginatedTable orders={this.state.orders} />
+                  <PaginatedTable orders={this.state.orders} table={this.state.value} />
                 </Table>
               </TableContainer>
                 )}

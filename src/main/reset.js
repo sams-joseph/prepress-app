@@ -3,6 +3,7 @@ import fs from 'fs';
 import Store from 'electron-store';
 import moment from 'moment';
 
+import Reset from '../models/Reset';
 import { pad } from './util';
 
 const store = new Store();
@@ -47,6 +48,11 @@ function resetOrder(order, selectedParts) {
 
 const reset = () => ipcMain.on('reset-order', (event, arg) => {
   resetOrder(arg.new, arg.selectedParts);
+  const order = new Reset({
+    order: arg.new,
+    parts: arg.selectedParts,
+  });
+  order.save();
   event.sender.send('reset-order', 'done');
 });
 
