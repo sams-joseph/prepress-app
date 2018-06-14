@@ -10,16 +10,56 @@ import blue from '@material-ui/core/colors/blue';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Button from '@material-ui/core/Button';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import IconButton from '@material-ui/core/IconButton';
 import AddIcon from '@material-ui/icons/Add';
+import SettingsIcon from '@material-ui/icons/Settings';
+import HistoryIcon from '@material-ui/icons/History';
+import RedoIcon from '@material-ui/icons/Redo';
+import RefreshIcon from '@material-ui/icons/Refresh';
 import Typography from '@material-ui/core/Typography';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import Reorder from '../Reorder';
+import Header from '../Header';
+import Sidebar from '../Sidebar';
 
 const Container = styled.div`
   width: 100%;
   margin-top: 64px;
   overflow: auto;
+  flex: 1;
+`;
+
+const Flex = styled.div`
+  display: flex;
+  width: 100%;
+`;
+
+const ActionButton = styled.button`
+  width: 160px;
+  height: 30px;
+  background: #039be5;
+  color: white;
+  margin: 0 20px 40px 20px;
+  border: none;
+  border-radius: 2px;
+  box-shadow: 0px 1px 6px 2px rgba(0,0,0,0.25);
+  cursor: pointer;
+
+  &:disabled {
+    background: rgba(0,0,0,0.25);
+    color: rgba(255,255,255, 0.5);
+    box-shadow: 0px 1px 6px 2px rgba(0,0,0,0);
+    cursor: not-allowed;
+  }
+`;
+
+const HeaderBar = styled.div`
+  background: #EFF3F6;
+  height: 50px;
+  width: 100%;
 `;
 
 const Message = styled.div`
@@ -93,8 +133,8 @@ const drawerWidth = 240;
 
 const customTheme = createMuiTheme({
   palette: {
-    primary: { main: blue[500] },
-    secondary: { main: '#11cb5f' },
+    primary: { main: '#039be5' },
+    secondary: { main: '#00c853' },
   },
 });
 
@@ -116,21 +156,10 @@ const styles = theme => ({
     display: 'flex',
     width: '100%',
   },
-  appBar: {
-    background: '#37474F',
-    zIndex: theme.zIndex.drawer + 1,
-  },
-  'appBar-left': {
-    marginLeft: drawerWidth,
-  },
-  'appBar-right': {
-    marginRight: drawerWidth,
-  },
   drawerPaper: {
     position: 'relative',
     width: drawerWidth,
   },
-  toolbar: theme.mixins.toolbar,
   content: {
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
@@ -160,6 +189,42 @@ const styles = theme => ({
     textDecoration: 'none',
     marginRight: '20px',
   },
+  tabsRoot: {
+    borderBottom: 'none',
+  },
+  tabsIndicator: {
+    backgroundColor: '#039BDF',
+  },
+  tabRoot: {
+    textTransform: 'initial',
+    minWidth: 72,
+    fontWeight: theme.typography.fontWeightRegular,
+    marginLeft: theme.spacing.unit * 4,
+    transition: 'all 0.125s',
+    fontFamily: [
+      '-apple-system',
+      'BlinkMacSystemFont',
+      '"Segoe UI"',
+      'Roboto',
+      '"Helvetica Neue"',
+      'Arial',
+      'sans-serif',
+      '"Apple Color Emoji"',
+      '"Segoe UI Emoji"',
+      '"Segoe UI Symbol"',
+    ].join(','),
+    '&:hover': {
+      color: '#40a9ff',
+      opacity: 1,
+    },
+    '&$tabSelected': {
+      color: '#039BDF',
+      fontWeight: theme.typography.fontWeightMedium,
+    },
+    '&:focus': {
+      color: '#40a9ff',
+    },
+  },
 });
 
 class Rename extends React.Component {
@@ -172,6 +237,7 @@ class Rename extends React.Component {
       orders: {},
       loading: false,
       success: false,
+      value: 0,
     };
 
     this.addRow = this.addRow.bind(this);
@@ -180,6 +246,7 @@ class Rename extends React.Component {
     this.processRenames = this.processRenames.bind(this);
     this.removeSavedRow = this.removeSavedRow.bind(this);
     this.reset = this.reset.bind(this);
+    this.handleChange = this.handleChange.bind(this);
   }
 
   componentDidMount() {
@@ -202,7 +269,14 @@ class Rename extends React.Component {
     const num = this.state.num + 1;
     const tempHash = {
       ...hash,
-      [num]: <Reorder remove={() => this.removeRow(num)} removeRow={this.removeSavedRow} key={num} save={this.saveRow} byId={num} />,
+      [num]: (
+        <Reorder
+          remove={() => this.removeRow(num)}
+          removeRow={this.removeSavedRow}
+          key={num}
+          save={this.saveRow}
+          byId={num}
+        />),
     };
     const tempId = [
       ...id,
@@ -251,63 +325,92 @@ class Rename extends React.Component {
     this.setState({ success: false });
   }
 
+  handleChange(event, value) {
+    this.setState({
+      value,
+    });
+  }
+
   render() {
     const { classes } = this.props;
+    const { value } = this.state;
     return (
       <MuiThemeProvider theme={customTheme}>
         <div className={classes.root}>
           <div className={classes.appFrame}>
-            <AppBar
-              position="absolute"
-              elevation={0}
-              className={classNames(classes.appBar, classes['appBar-left'])}
-            >
-              <Toolbar>
-                <Typography to="/" variant="body1" className={classes.link} component={Link}>Rename</Typography>
-                <Typography to="/reset" variant="body1" className={classes.link} component={Link}>Reset</Typography>
-                <Typography to="/logs" variant="body1" className={classes.link} component={Link}>Logs</Typography>
-                <div className={classes.flex} />
-                <Button variant="raised" color="primary" aria-label="run" disabled={this.state.byId.length !== Object.keys(this.state.orders).length} mini className={classes.button} onClick={this.processRenames}>
+            <Header />
+            <Flex>
+              <Sidebar active="home">
+                <ActionButton
+                  aria-label="run"
+                  disabled={this.state.byId.length !== Object.keys(this.state.orders).length}
+                  onClick={this.processRenames}
+                >
                   Run
-                </Button>
-              </Toolbar>
-            </AppBar>
-            <Container>
-              {this.state.success ? (
-                <Message>
-                  <Checkmark xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                    <CheckmarkCircle cx="26" cy="26" r="25" fill="none" />
-                    <CheckmarkCheck fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
-                  </Checkmark>
-                  <Typography className={classes.type} variant="title">Success</Typography>
-                  <Typography className={classes.type} variant="subheading">Renames Generated</Typography>
-                  <Button variant="flat" color="primary" aria-label="run" mini className={classes.successBtn} onClick={this.reset}>
+                </ActionButton>
+              </Sidebar>
+              <Container>
+                <HeaderBar>
+                  <Tabs value={value} onChange={this.handleChange} classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}>
+                    <Tab label="Pace" classes={{ root: classes.tabRoot, selected: classes.tabSelected }} />
+                    <Tab label="Metrodata" classes={{ root: classes.tabRoot, selected: classes.tabSelected }} />
+                  </Tabs>
+                </HeaderBar>
+                {this.state.success ? (
+                  <Message>
+                    <Checkmark xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                      <CheckmarkCircle cx="26" cy="26" r="25" fill="none" />
+                      <CheckmarkCheck fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+                    </Checkmark>
+                    <Typography className={classes.type} variant="title">Success</Typography>
+                    <Typography
+                      className={classes.type}
+                      variant="subheading"
+                    >
+                      Renames Generated
+                    </Typography>
+                    <Button
+                      variant="flat"
+                      color="primary"
+                      aria-label="run"
+                      mini
+                      className={classes.successBtn}
+                      onClick={this.reset}
+                    >
                     New Rename
-                  </Button>
-                </Message>
+                    </Button>
+                  </Message>
               ) : (
                   this.state.loading ? (
                     <ProgressContainer>
                       <CircularProgress className={classes.progress} />
                     </ProgressContainer>
                   ) : (
-                      <div>
-                        <List dense>
-                          <TransitionGroup>
-                            {this.state.byId.map(id => (
-                              <CSSTransition key={id} timeout={300} classNames="fade">
-                                {this.state.byHash[id]}
-                              </CSSTransition>
+                    <div>
+                      <List dense>
+                        <TransitionGroup>
+                          {this.state.byId.map(id => (
+                            <CSSTransition key={id} timeout={300} classNames="fade">
+                              {this.state.byHash[id]}
+                            </CSSTransition>
                             ))}
-                          </TransitionGroup>
-                        </List>
-                        <Button variant="fab" color="primary" aria-label="add" mini className={classes.addBtn} onClick={this.addRow}>
-                          <AddIcon />
-                        </Button>
-                      </div>
+                        </TransitionGroup>
+                      </List>
+                      <Button
+                        variant="fab"
+                        color="primary"
+                        aria-label="add"
+                        mini
+                        className={classes.addBtn}
+                        onClick={this.addRow}
+                      >
+                        <AddIcon />
+                      </Button>
+                    </div>
                     )
                 )}
-            </Container>
+              </Container>
+            </Flex>
           </div>
         </div>
       </MuiThemeProvider>

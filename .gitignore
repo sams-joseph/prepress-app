@@ -3,3 +3,4 @@ out
 .eslintcache
 .env
 src/config.js
+.DS_Store

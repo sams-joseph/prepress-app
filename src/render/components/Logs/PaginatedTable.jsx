@@ -115,13 +115,18 @@ function createData(original, newOrder, selectedParts, created) {
 const styles = theme => ({
   root: {
     width: '100%',
-    marginTop: theme.spacing.unit * 3,
+    marginTop: '0',
   },
   table: {
     minWidth: 500,
   },
+  row: {
+    '&:nth-of-type(odd)': {
+      backgroundColor: '#F3F5F7',
+    },
+  },
   tableWrapper: {
-    overflowX: 'auto',
+    overflow: 'auto',
   },
 });
 
@@ -168,7 +173,7 @@ class PaginatedTable extends React.Component {
             </TableHead>
             <TableBody>
               {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(n => (
-                <TableRow key={n.id}>
+                <TableRow key={n.counter} className={classes.row}>
                   <TableCell>{n.date}</TableCell>
                   <TableCell numeric component="th" scope="row">
                     {n.original}
@@ -204,7 +209,8 @@ class PaginatedTable extends React.Component {
 }
 
 PaginatedTable.propTypes = {
-  classes: PropTypes.object.isRequired,
+  classes: PropTypes.shape({}).isRequired,
+  orders: PropTypes.arrayOf(PropTypes.shape({})).isRequired,
 };
 
 export default withStyles(styles)(PaginatedTable);

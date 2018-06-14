@@ -1,8 +1,11 @@
 import { ipcMain } from 'electron';
+import Store from 'electron-store';
 import fs from 'fs';
 
 import Rename from '../models/Rename';
 import { pad } from './util';
+
+const store = new Store();
 
 function makeJobFolder(order, part) {
   try {
@@ -18,14 +21,14 @@ function makeJobFolder(order, part) {
 }
 
 function renameProd(directory, selectedParts, original, newFile, extension, file) {
-  const wip = '/Volumes/G33STORE/WIP/';
-  const base = '/Volumes/G33STORE/';
+  const base = store.get('g33store');
+  const wip = `${base}/WIP`;
   selectedParts.forEach((part) => {
-    fs.copyFile(`${base}${directory}/${original}/paint_files/${file}`, `${wip}${newFile}P${pad(part)}/paint_files/${newFile}P${pad(part)}${extension}`, (err) => {
+    fs.copyFile(`${base}/${directory}/${original}/paint_files/${file}`, `${wip}/${newFile}P${pad(part)}/paint_files/${newFile}P${pad(part)}${extension}`, (err) => {
       if (err) {
         if (err.code === 'ENOENT') {
-          makeJobFolder(`${wip}${newFile}`, pad(part));
-          fs.copyFile(`${base}${directory}/${original}/paint_files/${file}`, `${wip}${newFile}P${pad(part)}/paint_files/${newFile}P${pad(part)}${extension}`, (err) => {
+          makeJobFolder(`${wip}/${newFile}`, pad(part));
+          fs.copyFile(`${base}/${directory}/${original}/paint_files/${file}`, `${wip}/${newFile}P${pad(part)}/paint_files/${newFile}P${pad(part)}${extension}`, (err) => {
             if (err) throw err;
           });
         } else {
@@ -37,15 +40,15 @@ function renameProd(directory, selectedParts, original, newFile, extension, file
 }
 
 function renameBulletin(directory, selectedParts, original, newFile, extension, file) {
-  const wip = '/Volumes/G33STORE/WIP/';
-  const base = '/Volumes/G33STORE/';
-  const prodFolder = '/Volumes/G33STORE/_Hotfolders/Input/production/';
+  const base = store.get('g33store');
+  const wip = `${base}/WIP`;
+  const prodFolder = `${base}/_Hotfolders/Input/production/`;
   selectedParts.forEach((part) => {
-    fs.copyFile(`${base}${directory}/${original}/prep_art/${original}.tif`, `${wip}${newFile}P${pad(part)}/prep_art/${newFile}P${pad(part)}.tif`, (err) => {
+    fs.copyFile(`${base}/${directory}/${original}/prep_art/${original}.tif`, `${wip}/${newFile}P${pad(part)}/prep_art/${newFile}P${pad(part)}.tif`, (err) => {
       if (err) {
         if (err.code === 'ENOENT') {
-          makeJobFolder(`${wip}${newFile}`, pad(part));
-          fs.copyFile(`${base}${directory}/${original}/prep_art/${original}.tif`, `${wip}${newFile}P${pad(part)}/prep_art/${newFile}P${pad(part)}.tif`, (err) => {
+          makeJobFolder(`${wip}/${newFile}`, pad(part));
+          fs.copyFile(`${base}/${directory}/${original}/prep_art/${original}.tif`, `${wip}/${newFile}P${pad(part)}/prep_art/${newFile}P${pad(part)}.tif`, (err) => {
             if (err) throw err;
           });
         } else {
@@ -53,7 +56,7 @@ function renameBulletin(directory, selectedParts, original, newFile, extension, 
         }
       }
 
-      fs.copyFile(`${base}${directory}/${original}/prep_art/${original}.tif`, `${prodFolder}${newFile}P${pad(part)}.tif`, (err) => {
+      fs.copyFile(`${base}/${directory}/${original}/prep_art/${original}.tif`, `${prodFolder}${newFile}P${pad(part)}.tif`, (err) => {
         if (err) throw err;
       });
     });
@@ -61,15 +64,15 @@ function renameBulletin(directory, selectedParts, original, newFile, extension, 
 }
 
 function renameProof(directory, selectedParts, original, newFile, extension, file) {
-  const wip = '/Volumes/G33STORE/WIP/';
-  const base = '/Volumes/G33STORE/';
-  const epsonFolder = '/Volumes/G33STORE/_Hotfolders/Input/epson/';
+  const base = store.get('g33store');
+  const wip = `${base}/WIP`;
+  const epsonFolder = `${base}/_Hotfolders/Input/epson`;
   selectedParts.forEach((part) => {
-    fs.copyFile(`${base}${directory}/${original}/prep_art/LOW/${file}`, `${epsonFolder}${newFile}P${pad(part)}${extension}`, (err) => {
+    fs.copyFile(`${base}/${directory}/${original}/prep_art/LOW/${file}`, `${epsonFolder}/${newFile}P${pad(part)}${extension}`, (err) => {
       if (err) {
         if (err.code === 'ENOENT') {
-          makeJobFolder(`${wip}${newFile}`, pad(part));
-          fs.copyFile(`${base}${directory}/${original}/prep_art/LOW/${file}`, `${epsonFolder}${newFile}P${pad(part)}${extension}`, (err) => {
+          makeJobFolder(`${wip}/${newFile}`, pad(part));
+          fs.copyFile(`${base}/${directory}/${original}/prep_art/LOW/${file}`, `${epsonFolder}/${newFile}P${pad(part)}${extension}`, (err) => {
             if (err) throw err;
           });
         } else {
@@ -81,33 +84,59 @@ function renameProof(directory, selectedParts, original, newFile, extension, fil
 }
 
 const renaming = () => ipcMain.on('rename-orders', (event, arg) => {
-  const wip = '/Volumes/G33STORE/';
+  const base = store.get('g33store');
+  const wip = base;
   const keys = Object.keys(arg);
   let count = 0;
 
   keys.forEach((key) => {
-    const order = new Rename({ original: arg[key].original, new: arg[key].new, parts: arg[key].selectedParts });
+    const order = new Rename({
+      original: arg[key].original,
+      new: arg[key].new,
+      parts: arg[key].selectedParts,
+    });
     order.save();
     if (Object.prototype.hasOwnProperty.call(arg, key)) {
       const rename = arg[key];
 
-      fs.readdir(`${wip}${rename.directory}/${rename.original}/paint_files`, (err, files) => {
+      fs.readdir(`${wip}/${rename.directory}/${rename.original}/paint_files`, (err, files) => {
         files.forEach((file) => {
           const extension = file.substring(9, file.length);
           if (file.includes('_mil')) {
-            renameBulletin(rename.directory, rename.selectedParts, rename.original, rename.new, extension, file);
+            renameBulletin(
+              rename.directory,
+              rename.selectedParts,
+              rename.original,
+              rename.new,
+              extension,
+              file,
+            );
           } else {
-            renameProd(rename.directory, rename.selectedParts, rename.original, rename.new, extension, file);
+            renameProd(
+              rename.directory,
+              rename.selectedParts,
+              rename.original,
+              rename.new,
+              extension,
+              file,
+            );
           }
         });
       });
 
-      fs.readdir(`${wip}${rename.directory}/${rename.original}/prep_art/LOW`, (err, files) => {
+      fs.readdir(`${wip}/${rename.directory}/${rename.original}/prep_art/LOW`, (err, files) => {
         files.forEach((file) => {
           const extension = file.substring(9, file.length);
           const fileType = file.split('.')[1];
           if (fileType === 'pdf') {
-            renameProof(rename.directory, rename.selectedParts, rename.original, rename.new, extension, file);
+            renameProof(
+              rename.directory,
+              rename.selectedParts,
+              rename.original,
+              rename.new,
+              extension,
+              file,
+            );
           }
         });
       });

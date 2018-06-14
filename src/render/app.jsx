@@ -3,6 +3,7 @@ import { Route } from 'react-router-dom';
 import Rename from './components/Rename';
 import Reset from './components/Reset';
 import Logs from './components/Logs';
+import Settings from './components/Settings';
 
 class App extends React.Component {
   render() {
@@ -11,6 +12,7 @@ class App extends React.Component {
         <Route path="/" exact component={Rename} />
         <Route path="/reset" component={Reset} />
         <Route path="/logs" component={Logs} />
+        <Route path="/settings" component={Settings} />
       </div>
     );
   }

@@ -14,24 +14,25 @@ import AddIcon from '@material-ui/icons/Add';
 import Typography from '@material-ui/core/Typography';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import ResetItem from '../ResetItem';
+import Header from '../Header';
+import Sidebar from '../Sidebar';
 
 const Container = styled.div`
   width: 100%;
   margin-top: 64px;
   overflow: auto;
+  flex: 1;
 `;
 
-const Message = styled.div`
-  width: 100%;
-  margin-top: 64px;
-  overflow: auto;
-`;
-
-const ProgressContainer = styled.div`
-  width: 100%;
+const Flex = styled.div`
   display: flex;
-  padding: 40px 0;
-  justify-content: center;
+  width: 100%;
+`;
+
+const HeaderBar = styled.div`
+  background: #EFF3F6;
+  height: 50px;
+  width: 100%;
 `;
 
 export const CheckmarkCircle = styled.circle`
@@ -201,7 +202,15 @@ class Reset extends React.Component {
     const num = this.state.num + 1;
     const tempHash = {
       ...hash,
-      [num]: <ResetItem remove={() => this.removeRow(num)} removeRow={this.removeSavedRow} key={num} save={this.saveRow} byId={num} />,
+      [num]: (
+        <ResetItem
+          remove={() => this.removeRow(num)}
+          removeRow={this.removeSavedRow}
+          key={num}
+          save={this.saveRow}
+          byId={num}
+        />
+      ),
     };
     const tempId = [
       ...id,
@@ -256,33 +265,42 @@ class Reset extends React.Component {
       <MuiThemeProvider theme={customTheme}>
         <div className={classes.root}>
           <div className={classes.appFrame}>
-            <AppBar
-              position="absolute"
-              elevation={0}
-              className={classNames(classes.appBar, classes['appBar-left'])}
-            >
-              <Toolbar>
-                <Typography to="/" variant="body1" className={classes.link} component={Link}>Rename</Typography>
-                <Typography to="/reset" variant="body1" className={classes.link} component={Link}>Reset</Typography>
-                <Typography to="/logs" variant="body1" className={classes.link} component={Link}>Logs</Typography>
-              </Toolbar>
-            </AppBar>
-            <Container>
-              <div>
-                <List dense>
-                  <TransitionGroup>
-                    {this.state.byId.map(id => (
-                      <CSSTransition key={id} timeout={300} classNames="fade">
-                        {this.state.byHash[id]}
-                      </CSSTransition>
+            <Header />
+            <Flex>
+              <Sidebar active="reset" />
+              <Container>
+                <HeaderBar>
+                  <Typography
+                    variant="body1"
+                    color="textSecondary"
+                    style={{ lineHeight: '50px', marginLeft: '20px' }}
+                  >
+                  Reset folder structure
+                  </Typography>
+                </HeaderBar>
+                <div>
+                  <List dense>
+                    <TransitionGroup>
+                      {this.state.byId.map(id => (
+                        <CSSTransition key={id} timeout={300} classNames="fade">
+                          {this.state.byHash[id]}
+                        </CSSTransition>
                     ))}
-                  </TransitionGroup>
-                </List>
-                <Button variant="fab" color="primary" aria-label="add" mini className={classes.addBtn} onClick={this.addRow}>
-                  <AddIcon />
-                </Button>
-              </div>
-            </Container>
+                    </TransitionGroup>
+                  </List>
+                  <Button
+                    variant="fab"
+                    color="primary"
+                    aria-label="add"
+                    mini
+                    className={classes.addBtn}
+                    onClick={this.addRow}
+                  >
+                    <AddIcon />
+                  </Button>
+                </div>
+              </Container>
+            </Flex>
           </div>
         </div>
       </MuiThemeProvider>

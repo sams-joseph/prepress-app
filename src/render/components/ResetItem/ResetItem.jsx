@@ -101,7 +101,7 @@ class ResetItem extends Component {
 
           this.setState({ totalParts: parts, new: jobNumber, loading: false });
         })
-        .catch((err) => {
+        .catch(() => {
           this.setState({ totalParts: [], new: jobNumber, loading: false });
         });
     } else {
@@ -167,42 +167,44 @@ class ResetItem extends Component {
             <CircularProgress className={classes.progress} size={30} />
           ) : (
             <FormControl className={classes.formControl}>
-                <InputLabel htmlFor="select-multiple">Parts</InputLabel>
-                <Select
-                  disabled={this.state.totalParts <= 0 || this.state.isSaved}
-                  error={!!this.state.errors.selectedParts}
-                  multiple
-                  value={this.state.selectedParts}
-                  onChange={this.handleChange}
-                  input={<Input id="select-multiple" />}
-                >
-                  {this.state.totalParts.map(part => (
-                    <MenuItem
-                      key={part}
-                      value={part}
-                    >
-                      {part}
-                    </MenuItem>
+              <InputLabel htmlFor="select-multiple">Parts</InputLabel>
+              <Select
+                disabled={this.state.totalParts <= 0 || this.state.isSaved}
+                error={!!this.state.errors.selectedParts}
+                multiple
+                value={this.state.selectedParts}
+                onChange={this.handleChange}
+                input={<Input id="select-multiple" />}
+              >
+                {this.state.totalParts.map(part => (
+                  <MenuItem
+                    key={part}
+                    value={part}
+                  >
+                    {part}
+                  </MenuItem>
                   ))}
-                </Select>
-              </FormControl>
+              </Select>
+            </FormControl>
             )}
         </form>
         <ListItemSecondaryAction>
           {this.state.processing ? (
             <CircularProgress className={classes.progress} size={30} />
           ) : (
-            <IconButton aria-label="Save" onClick={this.saveRow} disabled={this.state.isSaved}>
+            <div>
+              <IconButton aria-label="Save" onClick={this.saveRow} disabled={this.state.isSaved}>
                 {this.state.isSaved ? (
                   <CheckIcon />
                 ) : (
                   <PlayIcon />
                   )}
               </IconButton>
-            )}
-          <IconButton aria-label="Delete" onClick={this.removeRow}>
-            <DeleteIcon />
-          </IconButton>
+              <IconButton aria-label="Delete" onClick={this.removeRow}>
+                <DeleteIcon />
+              </IconButton>
+            </div>
+          )}
         </ListItemSecondaryAction>
       </ListItem>
     );
@@ -211,6 +213,7 @@ class ResetItem extends Component {
 
 ResetItem.propTypes = {
   classes: PropTypes.shape({}).isRequired,
+  remove: PropTypes.func.isRequired,
 };
 
 export default withStyles(styles)(ResetItem);

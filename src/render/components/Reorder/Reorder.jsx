@@ -90,7 +90,7 @@ class Reorder extends Component {
 
           this.setState({ totalParts: parts, new: jobNumber, loading: false });
         })
-        .catch((err) => {
+        .catch(() => {
           this.setState({ totalParts: [], new: jobNumber, loading: false });
         });
     } else {
@@ -199,25 +199,25 @@ class Reorder extends Component {
             <CircularProgress className={classes.progress} size={30} />
           ) : (
             <FormControl className={classes.formControl}>
-                <InputLabel htmlFor="select-multiple">Parts</InputLabel>
-                <Select
-                  disabled={this.state.totalParts <= 0 || this.state.isSaved}
-                  error={!!this.state.errors.selectedParts}
-                  multiple
-                  value={this.state.selectedParts}
-                  onChange={this.handleChange}
-                  input={<Input id="select-multiple" />}
-                >
-                  {this.state.totalParts.map(part => (
-                    <MenuItem
-                      key={part}
-                      value={part}
-                    >
-                      {part}
-                    </MenuItem>
+              <InputLabel htmlFor="select-multiple">Parts</InputLabel>
+              <Select
+                disabled={this.state.totalParts <= 0 || this.state.isSaved}
+                error={!!this.state.errors.selectedParts}
+                multiple
+                value={this.state.selectedParts}
+                onChange={this.handleChange}
+                input={<Input id="select-multiple" />}
+              >
+                {this.state.totalParts.map(part => (
+                  <MenuItem
+                    key={part}
+                    value={part}
+                  >
+                    {part}
+                  </MenuItem>
                   ))}
-                </Select>
-              </FormControl>
+              </Select>
+            </FormControl>
             )}
         </form>
         <ListItemSecondaryAction>
@@ -233,8 +233,14 @@ class Reorder extends Component {
   }
 }
 
+const { shape, func, number } = PropTypes;
+
 Reorder.propTypes = {
-  classes: PropTypes.shape({}).isRequired,
+  classes: shape({}).isRequired,
+  remove: func.isRequired,
+  removeRow: func.isRequired,
+  byId: number.isRequired,
+  save: func.isRequired,
 };
 
 export default withStyles(styles)(Reorder);

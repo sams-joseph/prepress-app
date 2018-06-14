@@ -1,18 +1,21 @@
 import { ipcMain } from 'electron';
 import fs from 'fs';
+import Store from 'electron-store';
 import moment from 'moment';
 
 import { pad } from './util';
 
+const store = new Store();
 
 function makeResetFolder(order, part, cb) {
-  const wip = '/Volumes/G33STORE/WIP/';
+  const base = store.get('g33store');
+  const wip = `${base}/WIP`;
   const date = moment(Date.now()).format('MMM_DD_YYYY_hh-mm-ssA');
   try {
-    fs.mkdirSync(`${wip}${order}P${part}/prep_art/OLD-${date}`);
-    fs.mkdirSync(`${wip}${order}P${part}/prep_art/OLD-${date}/mmt_hires`);
-    fs.mkdirSync(`${wip}${order}P${part}/prep_art/OLD-${date}/paint_files`);
-    fs.mkdirSync(`${wip}${order}P${part}/prep_art/OLD-${date}/prep_art`);
+    fs.mkdirSync(`${wip}/${order}P${part}/prep_art/OLD-${date}`);
+    fs.mkdirSync(`${wip}/${order}P${part}/prep_art/OLD-${date}/mmt_hires`);
+    fs.mkdirSync(`${wip}/${order}P${part}/prep_art/OLD-${date}/paint_files`);
+    fs.mkdirSync(`${wip}/${order}P${part}/prep_art/OLD-${date}/prep_art`);
 
     cb(date);
   } catch (err) {
@@ -29,14 +32,15 @@ function moveFilesForReset(path, newPath) {
 }
 
 function resetOrder(order, selectedParts) {
-  const wip = '/Volumes/G33STORE/WIP/';
+  const base = store.get('g33store');
+  const wip = `${base}/WIP`;
   selectedParts.forEach((part) => {
     makeResetFolder(order, pad(part), (date) => {
-      moveFilesForReset(`${wip}${order}P${pad(part)}/mmt_hires`, `${wip}${order}P${pad(part)}/prep_art/OLD-${date}/mmt_hires`);
-      moveFilesForReset(`${wip}${order}P${pad(part)}/paint_files`, `${wip}${order}P${pad(part)}/prep_art/OLD-${date}/paint_files`);
-      moveFilesForReset(`${wip}${order}P${pad(part)}/prep_art`, `${wip}${order}P${pad(part)}/prep_art/OLD-${date}/prep_art`);
+      moveFilesForReset(`${wip}/${order}P${pad(part)}/mmt_hires`, `${wip}/${order}P${pad(part)}/prep_art/OLD-${date}/mmt_hires`);
+      moveFilesForReset(`${wip}/${order}P${pad(part)}/paint_files`, `${wip}/${order}P${pad(part)}/prep_art/OLD-${date}/paint_files`);
+      moveFilesForReset(`${wip}/${order}P${pad(part)}/prep_art`, `${wip}/${order}P${pad(part)}/prep_art/OLD-${date}/prep_art`);
 
-      fs.mkdirSync(`${wip}${order}P${pad(part)}/prep_art/LOW`);
+      fs.mkdirSync(`${wip}/${order}P${pad(part)}/prep_art/LOW`);
     });
   });
 }

@@ -1,12 +1,15 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { enableLiveReload } from 'electron-compile';
 import mongoose from 'mongoose';
+import Store from 'electron-store';
 
 import { DBUSER, DBPASSWORD } from './config';
 import renaming from './main/renaming';
 import reset from './main/reset';
-import log from './main/log';
+import { log, search } from './main/log';
+
+const store = new Store();
 
 // require('update-electron-app')();
 
@@ -25,6 +28,7 @@ const createWindow = async () => {
   mainWindow = new BrowserWindow({
     width: 1000,
     height: 700,
+    titleBarStyle: 'hiddenInset',
   });
 
   // and load the index.html of the app.
@@ -33,7 +37,7 @@ const createWindow = async () => {
   // Open the DevTools.
   if (isDevMode) {
     await installExtension(REACT_DEVELOPER_TOOLS);
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
   }
 
   // Emitted when the window is closed.
@@ -69,7 +73,23 @@ app.on('activate', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
-
+if (!store.has('g33store')) {
+  store.set('g33store', '/Volumes/G33STORE/');
+}
 renaming();
 reset();
 log();
+search();
+
+ipcMain.on('select-directory', (event, arg) => {
+  dialog.showOpenDialog({ properties: ['openDirectory'] }, (directory) => {
+    if (typeof directory !== 'undefined') {
+      event.sender.send('select-directory', directory);
+    }
+  });
+});
+
+ipcMain.on('save-settings', (event, arg) => {
+  store.set('g33store', arg);
+  event.sender.send('save-settings', 'saved');
+});
