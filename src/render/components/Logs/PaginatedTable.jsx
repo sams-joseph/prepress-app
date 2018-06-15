@@ -1,4 +1,5 @@
 import React from 'react';
+import { shell } from 'electron';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
@@ -104,12 +105,50 @@ const TablePaginationActionsWrapped = withStyles(actionsStyles, { withTheme: tru
   TablePaginationActions,
 );
 
+function clickOrder(e, link) {
+  e.preventDefault();
+  shell.openExternal(link);
+}
+
+function createLinkOrderPart(num) {
+  const order = num.substring(0, 6);
+  const part = num.substring(7, 9);
+  return num.length === 9 ? (
+    <a style={{ textDecoration: 'none', color: '#039be5' }} href="" onClick={e => clickOrder(e, `https://epace.mmt.com/epace/company:public/object/JobPart/detail/${order}%3A${part}`)}>{num}</a>
+  ) : (
+    num
+  );
+}
+
+function createLinkOrder(num) {
+  return (
+    <a style={{ textDecoration: 'none', color: '#039be5' }} href="" onClick={e => clickOrder(e, `https://epace.mmt.com/epace/company:public/object/Job/detail/${num}`)}>{num}</a>
+  );
+}
+
+const pad = (num) => {
+  let s = String(num);
+  while (s.length < 2) { s = `0${s}`; }
+  return s;
+};
+
+
+function createLinkPart(order, part) {
+  return (
+    <a style={{ textDecoration: 'none', color: '#039be5' }} href="" onClick={e => clickOrder(e, `https://epace.mmt.com/epace/company:public/object/JobPart/detail/${order}%3A${pad(part)}`)}>{part}</a>
+  );
+}
+
 let counter = 0;
 function createData(original, newOrder, selectedParts, created) {
   counter += 1;
-  const parts = selectedParts.join(', ');
+  const tempParts = [];
+  selectedParts.forEach((part) => {
+    tempParts.push(createLinkPart(newOrder, part));
+  });
+  const parts = tempParts.reduce((prev, curr) => [prev, ', ', curr]);
   const date = moment(created).format('h:mm A MMM DD YYYY');
-  return { counter, date, original, newOrder, parts };
+  return { counter, date, original: createLinkOrderPart(original), newOrder: createLinkOrder(newOrder), parts };
 }
 
 let resetCounter = 0;
