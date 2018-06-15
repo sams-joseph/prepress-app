@@ -265,7 +265,7 @@ class Reset extends React.Component {
       <MuiThemeProvider theme={customTheme}>
         <div className={classes.root}>
           <div className={classes.appFrame}>
-            <Header />
+            <Header history={this.props.history} />
             <Flex>
               <Sidebar active="reset" />
               <Container>

@@ -49,17 +49,17 @@ const createWindow = async () => {
     mainWindow = null;
   });
 
-
-  const template = [
-    {
-      label: 'window',
-      submenu: [
+  if (!isDevMode) {
+    const template = [
+      {
+        label: 'window',
+        submenu: [
         { role: 'quit' },
-      ],
-    },
-    {
-      label: 'Edit',
-      submenu: [
+        ],
+      },
+      {
+        label: 'Edit',
+        submenu: [
         { role: 'undo' },
         { role: 'redo' },
         { type: 'separator' },
@@ -69,12 +69,13 @@ const createWindow = async () => {
         { role: 'pasteandmatchstyle' },
         { role: 'delete' },
         { role: 'selectall' },
-      ],
-    },
-  ];
+        ],
+      },
+    ];
 
-  const menu = Menu.buildFromTemplate(template);
-  Menu.setApplicationMenu(menu);
+    const menu = Menu.buildFromTemplate(template);
+    Menu.setApplicationMenu(menu);
+  }
 };
 
 // This method will be called when Electron has finished

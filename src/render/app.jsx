@@ -4,6 +4,7 @@ import Rename from './components/Rename';
 import Reset from './components/Reset';
 import Logs from './components/Logs';
 import Settings from './components/Settings';
+import Job from './components/Job';
 
 class App extends React.Component {
   render() {
@@ -13,6 +14,7 @@ class App extends React.Component {
         <Route path="/reset" component={Reset} />
         <Route path="/logs" component={Logs} />
         <Route path="/settings" component={Settings} />
+        <Route path="/job/:order" component={Job} />
       </div>
     );
   }
