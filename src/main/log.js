@@ -1,7 +1,9 @@
 import { ipcMain } from 'electron';
+import sanitizer from 'sanitizer';
 
 import Rename from '../models/Rename';
 import Reset from '../models/Reset';
+
 
 export const log = () => ipcMain.on('get-logs', (event, arg) => {
   if (arg === 0) {
@@ -16,12 +18,14 @@ export const log = () => ipcMain.on('get-logs', (event, arg) => {
 });
 
 export const search = () => ipcMain.on('search-logs', (event, arg) => {
+  const query = sanitizer.sanitize(arg.search);
+
   if (arg.table === 0) {
-    Rename.find({ $or: [{ original: { $regex: arg.search, $options: 'i' } }, { new: { $regex: arg.search, $options: 'i' } }] }).then((logs) => {
+    Rename.find({ $or: [{ original: { $regex: query, $options: 'i' } }, { new: { $regex: query, $options: 'i' } }] }).then((logs) => {
       event.sender.send('search-logs', logs);
     });
   } else {
-    Reset.find({ order: { $regex: arg.search, $options: 'i' } }).then((logs) => {
+    Reset.find({ order: { $regex: query, $options: 'i' } }).then((logs) => {
       event.sender.send('search-logs', logs);
     });
   }

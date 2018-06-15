@@ -210,6 +210,7 @@ class Logs extends React.Component {
   }
 
   handleSearch(event) {
+    this.setState({ loading: true });
     ipcRenderer.send('search-logs', { search: event.target.value, table: this.state.value });
   }
 
@@ -242,27 +243,27 @@ class Logs extends React.Component {
                     </Grid>
                   </Grid>
                 </Query>
-                {this.state.loading ? (
-                  <Container>
-                    <ProgressContainer>
-                      <CircularProgress className={classes.progress} />
-                    </ProgressContainer>
-                  </Container>
-            ) : (
-              <TableContainer>
-                <Table>
-                  <TableHeading>
-                    <Typography
-                      variant="body1"
-                      style={{ lineHeight: '75px', marginLeft: '20px', color: 'white', fontWeight: '300', letterSpacing: '1px' }}
-                    >
-                      {this.state.value === 0 ? 'Rename History' : 'Reset History'}
-                    </Typography>
-                  </TableHeading>
-                  <PaginatedTable orders={this.state.orders} table={this.state.value} />
-                </Table>
-              </TableContainer>
-                )}
+                <TableContainer>
+                  <Table>
+                    <TableHeading>
+                      <Typography
+                        variant="body1"
+                        style={{ lineHeight: '75px', marginLeft: '20px', color: 'white', fontWeight: '300', letterSpacing: '1px' }}
+                      >
+                        {this.state.value === 0 ? 'Rename History' : 'Reset History'}
+                      </Typography>
+                    </TableHeading>
+                    {this.state.loading ? (
+                      <Container>
+                        <ProgressContainer>
+                          <CircularProgress className={classes.progress} />
+                        </ProgressContainer>
+                      </Container>
+                    ) : (
+                      <PaginatedTable orders={this.state.orders} table={this.state.value} />
+                    )}
+                  </Table>
+                </TableContainer>
               </Container>
             </Flex>
           </div>

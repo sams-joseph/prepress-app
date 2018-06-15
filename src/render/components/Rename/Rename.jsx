@@ -6,22 +6,15 @@ import styled from 'styled-components';
 import classNames from 'classnames';
 import { MuiThemeProvider, createMuiTheme, withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
-import blue from '@material-ui/core/colors/blue';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
 import Button from '@material-ui/core/Button';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import IconButton from '@material-ui/core/IconButton';
 import AddIcon from '@material-ui/icons/Add';
-import SettingsIcon from '@material-ui/icons/Settings';
-import HistoryIcon from '@material-ui/icons/History';
-import RedoIcon from '@material-ui/icons/Redo';
-import RefreshIcon from '@material-ui/icons/Refresh';
 import Typography from '@material-ui/core/Typography';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import Reorder from '../Reorder';
+import ReorderMetroItem from '../ReorderMetroItem';
 import Header from '../Header';
 import Sidebar from '../Sidebar';
 
@@ -261,23 +254,50 @@ class Rename extends React.Component {
         });
       }, 3000);
     });
+
+    ipcRenderer.on('rename-metro', () => {
+      setTimeout(() => {
+        this.setState({
+          loading: false,
+          orders: {},
+          success: true,
+        });
+      }, 3000);
+    });
   }
 
   addRow() {
     const hash = this.state.byHash;
     const id = this.state.byId;
+    const value = this.state.value;
     const num = this.state.num + 1;
-    const tempHash = {
-      ...hash,
-      [num]: (
-        <Reorder
-          remove={() => this.removeRow(num)}
-          removeRow={this.removeSavedRow}
-          key={num}
-          save={this.saveRow}
-          byId={num}
-        />),
-    };
+    let tempHash = {};
+
+    if (value === 0) {
+      tempHash = {
+        ...hash,
+        [num]: (
+          <Reorder
+            remove={() => this.removeRow(num)}
+            removeRow={this.removeSavedRow}
+            key={num}
+            save={this.saveRow}
+            byId={num}
+          />),
+      };
+    } else {
+      tempHash = {
+        ...hash,
+        [num]: (
+          <ReorderMetroItem
+            remove={() => this.removeRow(num)}
+            removeRow={this.removeSavedRow}
+            key={num}
+            save={this.saveRow}
+            byId={num}
+          />),
+      };
+    }
     const tempId = [
       ...id,
       num,
@@ -318,7 +338,11 @@ class Rename extends React.Component {
 
   processRenames() {
     this.setState({ loading: true });
-    ipcRenderer.send('rename-orders', this.state.orders);
+    if (this.state.value === 0) {
+      ipcRenderer.send('rename-orders', this.state.orders);
+    } else {
+      ipcRenderer.send('rename-metro', this.state.orders);
+    }
   }
 
   reset() {
@@ -327,7 +351,14 @@ class Rename extends React.Component {
 
   handleChange(event, value) {
     this.setState({
+      byId: [],
+      byHash: {},
+      orders: {},
       value,
+    }, () => {
+      setTimeout(() => {
+        this.addRow();
+      }, 250);
     });
   }
 
@@ -343,7 +374,7 @@ class Rename extends React.Component {
               <Sidebar active="home">
                 <ActionButton
                   aria-label="run"
-                  disabled={this.state.byId.length !== Object.keys(this.state.orders).length}
+                  disabled={this.state.byId.length !== Object.keys(this.state.orders).length || this.state.byId.length < 1}
                   onClick={this.processRenames}
                 >
                   Run

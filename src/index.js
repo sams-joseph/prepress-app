@@ -6,6 +6,7 @@ import Store from 'electron-store';
 
 import { DBUSER, DBPASSWORD } from './config';
 import renaming from './main/renaming';
+import renameMetro from './main/rename-metro';
 import reset from './main/reset';
 import { log, search } from './main/log';
 
@@ -28,7 +29,7 @@ const createWindow = async () => {
   mainWindow = new BrowserWindow({
     width: 1000,
     height: 700,
-    titleBarStyle: 'hiddenInset',
+    titleBarStyle: 'hidden',
   });
 
   // and load the index.html of the app.
@@ -77,6 +78,7 @@ if (!store.has('g33store')) {
   store.set('g33store', '/Volumes/G33STORE/');
 }
 renaming();
+renameMetro();
 reset();
 log();
 search();
