@@ -19,6 +19,7 @@ mongoose.connect(`mongodb://${DBUSER}:${DBPASSWORD}@ds239359.mlab.com:39359/prep
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
+let splash;
 
 const isDevMode = process.execPath.match(/[\\/]electron/);
 
@@ -30,16 +31,29 @@ const createWindow = async () => {
     width: 1000,
     height: 700,
     titleBarStyle: 'hidden',
+    show: false,
   });
 
+  splash = new BrowserWindow({ width: 600, height: 400, transparent: true, frame: false, alwaysOnTop: true });
+
   // and load the index.html of the app.
+  splash.loadURL(`file://${__dirname}/splash.html`);
   mainWindow.loadURL(`file://${__dirname}/index.html`);
+
 
   // Open the DevTools.
   if (isDevMode) {
     await installExtension(REACT_DEVELOPER_TOOLS);
     // mainWindow.webContents.openDevTools();
   }
+
+  // if main window is ready to show, then destroy the splash window and show up the main window
+  mainWindow.once('ready-to-show', () => {
+    setTimeout(() => {
+      splash.destroy();
+      mainWindow.show();
+    }, 1500);
+  });
 
   // Emitted when the window is closed.
   mainWindow.on('closed', () => {
@@ -54,6 +68,17 @@ const createWindow = async () => {
       {
         label: 'window',
         submenu: [
+
+        ],
+      },
+      {
+        label: 'File',
+        submenu: [
+        { role: 'close' },
+        { role: 'minimize' },
+        { role: 'zoom' },
+        { type: 'separator' },
+        { role: 'front' },
         { role: 'quit' },
         ],
       },

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { shell } from 'electron';
 import styled from 'styled-components';
 import { MuiThemeProvider, createMuiTheme, withStyles } from '@material-ui/core/styles';
 import blue from '@material-ui/core/colors/blue';
@@ -29,6 +30,13 @@ const Main = styled.div`
   flex: 1;
 `;
 
+const Title = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+`;
+
 const Flex = styled.div`
   display: flex;
   width: 100%;
@@ -47,6 +55,13 @@ const ProgressContainer = styled.div`
   justify-content: center;
 `;
 
+const Divider = styled.hr`
+  border: 0;
+  background: #EFF3F6;
+  height: 2px;
+  margin: 20px 0;
+`;
+
 const pad = (num) => {
   let s = String(num);
   while (s.length < 2) { s = `0${s}`; }
@@ -55,7 +70,7 @@ const pad = (num) => {
 
 const convertInches = (inches) => {
   const feetFromInches = Math.floor(inches / 12);
-  const inchesRemainder = inches % 12;
+  const inchesRemainder = Math.round((inches % 12) * 100) / 100;
 
   const result = `${feetFromInches}'-${inchesRemainder}"`;
   return result;
@@ -109,7 +124,7 @@ const styles = theme => ({
     padding: theme.spacing.unit * 3,
   },
   button: {
-    margin: '20px 0',
+    margin: '0',
   },
   addBtn: {
     position: 'absolute',
@@ -194,6 +209,8 @@ class Job extends Component {
     };
 
     this.handleChange = this.handleChange.bind(this);
+    this.openPart = this.openPart.bind(this);
+    this.openPDF = this.openPDF.bind(this);
   }
 
   componentDidMount() {
@@ -243,8 +260,6 @@ class Job extends Component {
           jobPartItems,
         } = result.data;
 
-        console.log(jobPart);
-
         this.setState({
           jobPart,
           jobMaterials,
@@ -256,6 +271,14 @@ class Job extends Component {
         .catch((err) => {
           alert(err);
         });
+  }
+
+  openPart() {
+    shell.openExternal(`https://epace.mmt.com/epace/company:public/object/JobPart/detail/${this.state.job.job}%3A${this.state.jobPart.jobPart}`);
+  }
+
+  openPDF() {
+    shell.openItem(`/Volumes/G33STORE/_tFlow_Hotfolders/csr_repository/${this.state.job.job}P${this.state.jobPart.jobPart}.pdf`);
   }
 
   render() {
@@ -292,7 +315,7 @@ class Job extends Component {
                     </Typography>
                   </HeaderBar>
                   <HeaderBar>
-                    <Tabs value={value} onChange={this.handleChange} classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}>
+                    <Tabs value={value} scrollable scrollButtons="auto" onChange={this.handleChange} classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}>
                       {
                       tabs
                     }
@@ -306,20 +329,25 @@ class Job extends Component {
                     </Main>
                   ) : (
                     <Main>
-                      <Typography
-                        variant="subheading"
-                        color="primary"
-                        style={{ marginBottom: '20px' }}
-                      >
-                        {this.state.jobPart.description}
-                      </Typography>
-                      <IconButton className={classes.button} aria-label="Delete">
-                        <LaunchIcon />
-                      </IconButton>
-                      <IconButton className={classes.button} aria-label="Delete">
-                        <PDFIcon />
-                      </IconButton>
-                      <Grid container spacing={8} alignItems="flex-start" style={{ marginBottom: '40px' }}>
+                      <Title>
+                        <div>
+                          <Typography
+                            variant="subheading"
+                            color="primary"
+                          >
+                            {this.state.jobPart.description}
+                          </Typography>
+                        </div>
+                        <div>
+                          <IconButton className={classes.button} aria-label="Open PDF" onClick={this.openPDF}>
+                            <PDFIcon />
+                          </IconButton>
+                          <IconButton className={classes.button} aria-label="Open PACE" onClick={this.openPart}>
+                            <LaunchIcon />
+                          </IconButton>
+                        </div>
+                      </Title>
+                      <Grid container spacing={8} alignItems="flex-start">
                         <Grid item sm={3}>
                           <Typography
                             variant="body2"
@@ -382,8 +410,9 @@ class Job extends Component {
                           </Typography>
                         </Grid>
                       </Grid>
+                      <Divider />
                       <Grid container spacing={8} alignItems="flex-start">
-                        <Grid item sm={4}>
+                        <Grid item sm={6}>
                           <Typography
                             variant="body2"
                             color="default"
@@ -399,7 +428,7 @@ class Job extends Component {
                           ))
                         }
                         </Grid>
-                        <Grid item sm={8}>
+                        <Grid item sm={6}>
                           <Typography
                             variant="body2"
                             color="default"

@@ -128,7 +128,7 @@ const renaming = () => ipcMain.on('rename-orders', (event, arg) => {
         files.forEach((file) => {
           const extension = file.substring(9, file.length);
           const fileType = file.split('.')[1];
-          if (fileType === 'pdf') {
+          if (fileType === 'tif') {
             renameProof(
               rename.directory,
               rename.selectedParts,
