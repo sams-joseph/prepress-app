@@ -26,6 +26,31 @@ const isDevMode = process.execPath.match(/[\\/]electron/);
 
 if (isDevMode) enableLiveReload({ strategy: 'react-hmr' });
 
+let newWindow = null;
+
+function openCreateFolderWindow() {
+  if (newWindow) {
+    newWindow.focus();
+    return;
+  }
+
+  newWindow = new BrowserWindow({
+    height: 200,
+    resizable: false,
+    width: 300,
+    title: '',
+    minimizable: false,
+    titleBarStyle: 'hidden',
+    fullscreenable: false,
+  });
+
+  newWindow.loadURL(`file://${__dirname}/create.html`);
+
+  newWindow.on('closed', () => {
+    newWindow = null;
+  });
+}
+
 const createWindow = async () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -64,7 +89,7 @@ const createWindow = async () => {
     mainWindow = null;
   });
 
-  if (!isDevMode) {
+  if (isDevMode) {
     const template = [
       {
         label: 'window',
@@ -95,6 +120,16 @@ const createWindow = async () => {
         { role: 'pasteandmatchstyle' },
         { role: 'delete' },
         { role: 'selectall' },
+        ],
+      },
+      {
+        label: 'Create',
+        submenu: [
+          {
+            label: 'Create new WIP Folder',
+            accelerator: 'CmdOrCtrl+N',
+            click() { openCreateFolderWindow(); },
+          },
         ],
       },
     ];

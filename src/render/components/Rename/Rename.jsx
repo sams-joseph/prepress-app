@@ -344,7 +344,9 @@ class Rename extends React.Component {
   }
 
   reset() {
-    this.setState({ success: false });
+    this.setState({ success: false, byHash: {}, byId: [] }, () => {
+      this.addRow();
+    });
   }
 
   handleChange(event, value) {
