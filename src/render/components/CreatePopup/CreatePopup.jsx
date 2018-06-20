@@ -2,7 +2,10 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import { ipcRenderer } from 'electron';
 import TextField from '@material-ui/core/TextField';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import FormControl from '@material-ui/core/FormControl';
+import notifier from 'node-notifier';
+import path from 'path';
 
 const Container = styled.div`
   width: 100%;
@@ -15,6 +18,13 @@ const Form = styled.form`
   width: 100%;
   background: white;
   padding: 20px;
+`;
+
+const ProgressContainer = styled.div`
+  width: 100%;
+  display: flex;
+  padding: 40px 0;
+  justify-content: center;
 `;
 
 const ActionButton = styled.button`
@@ -46,6 +56,7 @@ class CreatePopup extends Component {
     super(props);
     this.state = {
       order: '',
+      loading: false,
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -54,14 +65,23 @@ class CreatePopup extends Component {
 
   componentDidMount() {
     ipcRenderer.on('create-folders', () => {
+      notifier.notify({
+        title: this.state.order,
+        message: 'WIP Folders created.',
+        icon: path.join(__dirname, '/images/logo.png'),
+        sound: true,
+        wait: true,
+      });
       this.setState({
         order: '',
+        loading: false,
       });
     });
   }
 
   onSubmit(e) {
     e.preventDefault();
+    this.setState({ loading: true });
     ipcRenderer.send('create-folders', this.state.order);
   }
 
@@ -74,19 +94,25 @@ class CreatePopup extends Component {
   render() {
     return (
       <Container>
-        <Form onSubmit={this.onSubmit}>
-          <div>
-            <FormControl fullWidth>
-              <TextField id="input-with-icon-grid" label="Order" onChange={this.handleChange} value={this.state.order} name="order" />
-            </FormControl>
-          </div>
-          <ActionButton
-            aria-label="run"
-            type="submit"
-          >
+        {this.state.loading ? (
+          <ProgressContainer>
+            <CircularProgress />
+          </ProgressContainer>
+        ) : (
+          <Form onSubmit={this.onSubmit}>
+            <div>
+              <FormControl fullWidth>
+                <TextField id="input-with-icon-grid" label="Order" onChange={this.handleChange} value={this.state.order} name="order" />
+              </FormControl>
+            </div>
+            <ActionButton
+              aria-label="run"
+              type="submit"
+            >
                   Create
-          </ActionButton>
-        </Form>
+            </ActionButton>
+          </Form>
+        )}
       </Container>
     );
   }
