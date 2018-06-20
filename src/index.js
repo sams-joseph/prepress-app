@@ -8,6 +8,7 @@ import { DBUSER, DBPASSWORD } from './config';
 import renaming from './main/renaming';
 import renameMetro from './main/rename-metro';
 import reset from './main/reset';
+import createFolders from './main/create-folders';
 import { log, search } from './main/log';
 
 const store = new Store();
@@ -136,6 +137,7 @@ renameMetro();
 reset();
 log();
 search();
+createFolders();
 
 ipcMain.on('select-directory', (event, arg) => {
   dialog.showOpenDialog({ properties: ['openDirectory'] }, (directory) => {

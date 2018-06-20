@@ -3,24 +3,23 @@ import { ipcRenderer } from 'electron';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { MuiThemeProvider, createMuiTheme, withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import Button from '@material-ui/core/Button';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import AddIcon from '@material-ui/icons/Add';
+import blue from '@material-ui/core/colors/blue';
 import Typography from '@material-ui/core/Typography';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import Reorder from '../Reorder';
-import ReorderMetroItem from '../ReorderMetroItem';
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+import FormControl from '@material-ui/core/FormControl';
+
 import Header from '../Header';
 import Sidebar from '../Sidebar';
 
 const Container = styled.div`
+  background: white;
   width: 100%;
   margin-top: 64px;
   overflow: auto;
   flex: 1;
+  display: flex;
+  flex-direction: column;
 `;
 
 const Flex = styled.div`
@@ -28,16 +27,34 @@ const Flex = styled.div`
   width: 100%;
 `;
 
+const HeaderBar = styled.div`
+  background: #EFF3F6;
+  height: 50px;
+  width: 100%;
+`;
+
+const Form = styled.form`
+  width: 100%;
+  background: white;
+  padding: 20px;
+  flex: 1;
+`;
+
 const ActionButton = styled.button`
-  width: 160px;
+  width: 170px;
   height: 30px;
   background: #039be5;
   color: white;
-  margin: 0 20px 40px 20px;
+  margin: 20px 0;
   border: none;
   border-radius: 2px;
-  box-shadow: 0px 1px 6px 2px rgba(0,0,0,0.25);
+  box-shadow: 0px 1px 6px 2px rgba(0,0,0,0.125);
   cursor: pointer;
+  transition: all 0.25s;
+
+  &:hover {
+    opacity: 0.75;
+  }
 
   &:disabled {
     background: rgba(0,0,0,0.25);
@@ -47,23 +64,11 @@ const ActionButton = styled.button`
   }
 `;
 
-const HeaderBar = styled.div`
-  background: #EFF3F6;
-  height: 50px;
-  width: 100%;
-`;
-
 const Message = styled.div`
   width: 100%;
-  margin-top: 64px;
+  padding-top: 64px;
   overflow: auto;
-`;
-
-const ProgressContainer = styled.div`
-  width: 100%;
-  display: flex;
-  padding: 40px 0;
-  justify-content: center;
+  background: white;
 `;
 
 export const CheckmarkCircle = styled.circle`
@@ -124,8 +129,8 @@ const drawerWidth = 240;
 
 const customTheme = createMuiTheme({
   palette: {
-    primary: { main: '#039be5' },
-    secondary: { main: '#00c853' },
+    primary: { main: blue[500] },
+    secondary: { main: '#11cb5f' },
   },
 });
 
@@ -147,10 +152,21 @@ const styles = theme => ({
     display: 'flex',
     width: '100%',
   },
+  appBar: {
+    background: '#37474F',
+    zIndex: theme.zIndex.drawer + 1,
+  },
+  'appBar-left': {
+    marginLeft: drawerWidth,
+  },
+  'appBar-right': {
+    marginRight: drawerWidth,
+  },
   drawerPaper: {
     position: 'relative',
     width: drawerWidth,
   },
+  toolbar: theme.mixins.toolbar,
   content: {
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
@@ -218,172 +234,64 @@ const styles = theme => ({
   },
 });
 
-class Rename extends React.Component {
+class CreateFolders extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      byHash: {},
-      byId: [],
-      num: 0,
-      orders: {},
-      loading: false,
+      order: '',
       success: false,
-      value: 0,
     };
 
-    this.addRow = this.addRow.bind(this);
-    this.removeRow = this.removeRow.bind(this);
-    this.saveRow = this.saveRow.bind(this);
-    this.processRenames = this.processRenames.bind(this);
-    this.removeSavedRow = this.removeSavedRow.bind(this);
-    this.reset = this.reset.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.onSubmit = this.onSubmit.bind(this);
+    this.reset = this.reset.bind(this);
   }
 
   componentDidMount() {
-    this.addRow();
-
-    ipcRenderer.on('rename-orders', () => {
-      setTimeout(() => {
-        this.setState({
-          loading: false,
-          orders: {},
-          success: true,
-        });
-      }, 3000);
-    });
-
-    ipcRenderer.on('rename-metro', () => {
-      setTimeout(() => {
-        this.setState({
-          loading: false,
-          orders: {},
-          success: true,
-        });
-      }, 3000);
+    ipcRenderer.on('create-folders', () => {
+      this.setState({
+        success: true,
+      });
     });
   }
 
-  addRow() {
-    const hash = this.state.byHash;
-    const id = this.state.byId;
-    const value = this.state.value;
-    const num = this.state.num + 1;
-    let tempHash = {};
-
-    if (value === 0) {
-      tempHash = {
-        ...hash,
-        [num]: (
-          <Reorder
-            remove={() => this.removeRow(num)}
-            removeRow={this.removeSavedRow}
-            key={num}
-            save={this.saveRow}
-            byId={num}
-          />),
-      };
-    } else {
-      tempHash = {
-        ...hash,
-        [num]: (
-          <ReorderMetroItem
-            remove={() => this.removeRow(num)}
-            removeRow={this.removeSavedRow}
-            key={num}
-            save={this.saveRow}
-            byId={num}
-          />),
-      };
-    }
-    const tempId = [
-      ...id,
-      num,
-    ];
-    this.setState({ byHash: tempHash, byId: tempId, num });
-  }
-
-  removeRow(id) {
-    const prunedIds = this.state.byId.filter(item => item !== id);
-    delete this.state.byHash[id];
-    delete this.state.orders[id];
-
+  onSubmit(e) {
+    e.preventDefault();
     this.setState({
-      byId: prunedIds,
-      byHash: this.state.byHash,
-      orders: this.state.orders,
+      success: true,
     });
+
+    ipcRenderer.send('create-folders', this.state.order);
   }
 
-  saveRow(data, id) {
-    const orders = this.state.orders;
-    const tempOrders = {
-      ...orders,
-      [id]: data,
-    };
+  handleChange(e) {
     this.setState({
-      orders: tempOrders,
+      order: e.target.value,
     });
-  }
-
-  removeSavedRow(id) {
-    delete this.state.orders[id];
-
-    this.setState({
-      orders: this.state.orders,
-    });
-  }
-
-  processRenames() {
-    this.setState({ loading: true });
-    if (this.state.value === 0) {
-      ipcRenderer.send('rename-orders', this.state.orders);
-    } else {
-      ipcRenderer.send('rename-metro', this.state.orders);
-    }
   }
 
   reset() {
-    this.setState({ success: false });
-  }
-
-  handleChange(event, value) {
-    this.setState({
-      byId: [],
-      byHash: {},
-      orders: {},
-      value,
-    }, () => {
-      setTimeout(() => {
-        this.addRow();
-      }, 250);
-    });
+    this.setState({ success: false, order: '' });
   }
 
   render() {
     const { classes } = this.props;
-    const { value } = this.state;
     return (
       <MuiThemeProvider theme={customTheme}>
         <div className={classes.root}>
           <div className={classes.appFrame}>
             <Header history={this.props.history} />
             <Flex>
-              <Sidebar active="home">
-                <ActionButton
-                  aria-label="run"
-                  disabled={this.state.byId.length !== Object.keys(this.state.orders).length || this.state.byId.length < 1}
-                  onClick={this.processRenames}
-                >
-                  Run
-                </ActionButton>
-              </Sidebar>
+              <Sidebar active="create" />
               <Container>
                 <HeaderBar>
-                  <Tabs value={value} onChange={this.handleChange} classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}>
-                    <Tab label="Pace" classes={{ root: classes.tabRoot, selected: classes.tabSelected }} />
-                    <Tab label="Metrodata" classes={{ root: classes.tabRoot, selected: classes.tabSelected }} />
-                  </Tabs>
+                  <Typography
+                    variant="body1"
+                    color="textSecondary"
+                    style={{ lineHeight: '50px', marginLeft: '20px' }}
+                  >
+                  Create WIP Folders
+                  </Typography>
                 </HeaderBar>
                 {this.state.success ? (
                   <Message>
@@ -396,7 +304,7 @@ class Rename extends React.Component {
                       className={classes.type}
                       variant="subheading"
                     >
-                      Renames Generated
+                      Folders Created
                     </Typography>
                     <Button
                       variant="flat"
@@ -406,37 +314,23 @@ class Rename extends React.Component {
                       className={classes.successBtn}
                       onClick={this.reset}
                     >
-                    New Rename
+                    New Folder
                     </Button>
                   </Message>
-              ) : (
-                  this.state.loading ? (
-                    <ProgressContainer>
-                      <CircularProgress className={classes.progress} />
-                    </ProgressContainer>
-                  ) : (
+                ) : (
+                  <Form onSubmit={this.onSubmit}>
                     <div>
-                      <List dense>
-                        <TransitionGroup>
-                          {this.state.byId.map(id => (
-                            <CSSTransition key={id} timeout={300} classNames="fade">
-                              {this.state.byHash[id]}
-                            </CSSTransition>
-                            ))}
-                        </TransitionGroup>
-                      </List>
-                      <Button
-                        variant="fab"
-                        color="primary"
-                        aria-label="add"
-                        mini
-                        className={classes.addBtn}
-                        onClick={this.addRow}
-                      >
-                        <AddIcon />
-                      </Button>
+                      <FormControl>
+                        <TextField id="input-with-icon-grid" label="Order" onChange={this.handleChange} value={this.state.order} name="order" />
+                      </FormControl>
                     </div>
-                    )
+                    <ActionButton
+                      aria-label="run"
+                      type="submit"
+                    >
+                  Create
+                    </ActionButton>
+                  </Form>
                 )}
               </Container>
             </Flex>
@@ -447,8 +341,8 @@ class Rename extends React.Component {
   }
 }
 
-Rename.propTypes = {
+CreateFolders.propTypes = {
   classes: PropTypes.shape({}).isRequired,
 };
 
-export default withStyles(styles)(Rename);
+export default withStyles(styles)(CreateFolders);

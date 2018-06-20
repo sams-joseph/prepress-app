@@ -5,6 +5,7 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import HistoryIcon from '@material-ui/icons/History';
 import RedoIcon from '@material-ui/icons/Redo';
 import RefreshIcon from '@material-ui/icons/Refresh';
+import CreateIcon from '@material-ui/icons/CreateNewFolder';
 
 const SidebarContainer = styled.div`
   width: 200px;
@@ -80,6 +81,15 @@ function Sidebar({ active, children }) {
           <RefreshIcon style={{ height: '18px', width: '18px', marginRight: '10px' }} />
           <span>
                       Reset
+          </span>
+        </NavItem>
+        <NavItem
+          to="/create"
+          className={active === 'create' ? 'active' : ''}
+        >
+          <CreateIcon style={{ height: '18px', width: '18px', marginRight: '10px' }} />
+          <span>
+                      Create
           </span>
         </NavItem>
       </Nav>
