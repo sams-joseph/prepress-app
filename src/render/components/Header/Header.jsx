@@ -85,6 +85,7 @@ class Header extends Component {
 
 Header.propTypes = {
   classes: PropTypes.shape({}).isRequired,
+  history: PropTypes.shape({ push: PropTypes.func.isRequired }).isRequired,
 };
 
 export default withStyles(styles)(Header);

@@ -89,7 +89,7 @@ const createWindow = async () => {
     mainWindow = null;
   });
 
-  if (isDevMode) {
+  if (!isDevMode) {
     const template = [
       {
         label: 'window',
