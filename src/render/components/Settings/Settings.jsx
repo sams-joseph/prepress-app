@@ -160,7 +160,7 @@ class Settings extends Component {
   }
 
   selectDirectory() {
-    ipcRenderer.send('select-directory', 'start');
+    ipcRenderer.send('select-directory', this.state.g33store);
   }
 
   saveSettings() {
@@ -219,6 +219,7 @@ class Settings extends Component {
 
 Settings.propTypes = {
   classes: PropTypes.shape({}).isRequired,
+  history: PropTypes.shape({}).isRequired,
 };
 
 export default withStyles(styles)(Settings);
